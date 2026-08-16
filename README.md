@@ -1,21 +1,119 @@
 # Trungtrung — landing page
 
-Marketing site for Trungtrung, a Tibetan language-learning app.
-Next.js 16 · React 19 · TypeScript · Tailwind CSS v4.
+Marketing site for **Trungtrung**, an app that teaches spoken Lhasa Tibetan and
+the uchen script.
 
-The visual system is not defined here. It is **synced from the design-system
-repo** by a script, so a colour, a type size or a radius is changed there and
-pulled in — never edited by hand in this repo.
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4.
 
-## Running it
+**The visual system is not authored here.** Colours, type, spacing, radii,
+shadows and motion all come from the design-system repo and are pulled in by a
+script. Change them there, run `npm run sync:design`, and the page follows. If
+you find yourself typing a hex code into this repo, something has gone wrong.
+
+---
+
+## Contents
+
+- [Quick start](#quick-start)
+- [Commands](#commands)
+- [How the page is put together](#how-the-page-is-put-together)
+- [The design pipeline](#the-design-pipeline)
+- [Numbers are counted, never typed](#numbers-are-counted-never-typed)
+- [Editing the page](#editing-the-page)
+- [Deployment](#deployment)
+- [The rules](#the-rules)
+- [Known gaps](#known-gaps)
+
+---
+
+## Quick start
 
 ```bash
 npm install
-npm run dev
+npm run dev          # http://localhost:3000
 ```
 
-The site builds without the design-system repo present: the tokens are vendored
-and the generated theme is committed. You only need the design system to re-sync.
+Requires **Node 20.9+** (Next 16's floor). npm is the only package manager set
+up on this machine — there is no pnpm, yarn or corepack, so `package-lock.json`
+is the lockfile that matters.
+
+The site **builds without the design-system repo present**: the tokens are
+vendored into `styles/tokens/`, the generated theme is committed, and the mascot
+lives in `public/mascot/`. You only need the sibling repo to *re-sync*.
+
+By default the design system is expected at `../design-system`. Point
+`TRUNGTRUNG_DS_PATH` somewhere else if yours lives elsewhere.
+
+---
+
+## Commands
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Dev server on :3000 |
+| `npm run build` | Production build — **this is the deploy command** |
+| `npm run start` | Serve a production build |
+| `npm run sync:design` | Pull tokens and mascot assets from the design system |
+| `npm run sync:stats` | Recount the content JSON into `content/stats.generated.ts` |
+| `npm run sync` | Both syncs |
+| `npm run check:adherence` | Enforce the never-do list |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm run lint` | ESLint |
+| `npm run verify` | typecheck + lint + adherence + both sync `--check`s |
+
+`npm run verify` is the local gate before committing. It needs the
+design-system repo present — see [Deployment](#deployment) for why that means it
+must not be your CI command.
+
+---
+
+## How the page is put together
+
+The page is a **kora**: one teal rail runs its whole length, drawing as you
+scroll, with each section hung off a waymark. `components/rail/KoraRail.tsx`
+renders one segment per section; every segment enters and leaves at the centre
+of the rail lane, so segments join seamlessly whatever height a section turns
+out to be. No measurement, no JavaScript, no layout effect.
+
+Sections in page order, as composed in `app/page.tsx`:
+
+| # | Section | File | Anchor | Rail bows |
+|---|---|---|---|---|
+| — | Header | `sections/Header.tsx` | — | — |
+| 1 | Hero | `sections/Hero.tsx` | — | — |
+| 2 | Two tracks | `sections/Tracks.tsx` | `#two-tracks` | left |
+| 3 | The journey | `sections/Journey.tsx` | `#the-walk` | right |
+| 4 | The crossing | `sections/Crossing.tsx` | `#the-crossing` | left |
+| 5 | The collection | `sections/Collection.tsx` | `#collection` | right |
+| 6 | How it is made | `sections/Principles.tsx` | `#how-its-built` | left |
+| 7 | Why this exists | `sections/Note.tsx` | `#why` | right |
+| 8 | Join the walk | `sections/Join.tsx` | `#join` | left |
+| — | Footer | `sections/Footer.tsx` | — | — |
+
+The rail alternates `bow="left"` / `bow="right"` down the page. Keep alternating
+if you add or reorder anything.
+
+**The Crossing is the only `tone="accent"` section** — the one full-bleed teal
+panel the design system allows in a whole product. Do not add a second.
+
+### The three app screens
+
+`components/screens/` holds hand-built React re-creations of real board screens,
+using the same tokens the app does. They are not screenshots, so they stay crisp
+at any size and can be read by a screen reader.
+
+| Component | Board screen | Shows |
+|---|---|---|
+| `ScreenJourney` | S2 | The winding district rail |
+| `ScreenExercise` | S7 | A word check, answered, with the answer band |
+| `ScreenFirstWord` | B1 | The first readable word resolving letter by letter |
+
+They are authored at the board's 390×760 and never re-laid-out.
+`PhoneFrame` shrinks the whole frame with CSS `zoom` at two breakpoints
+(`0.76` below 30rem, `0.58` below 23.5rem) — `zoom` rather than
+`transform: scale()` because zoom reflows, so the frame keeps its real height.
+
+---
 
 ## The design pipeline
 
@@ -30,59 +128,148 @@ public/mascot/*.png          the crane
 styles/tokens.lock.json      source hashes, for drift detection
 ```
 
-| Command | What it does |
-|---|---|
-| `npm run sync:design` | Pull tokens and mascot assets from the design system |
-| `npm run sync:stats` | Recount the content JSON into `content/stats.generated.ts` |
-| `npm run sync` | Both |
-| `npm run check:adherence` | Enforce the never-do list (see below) |
-| `npm run verify` | Typecheck, lint, adherence, and both sync `--check`s |
+**To change how a token maps into Tailwind, edit `scripts/token-map.ts`.** It is
+the only place token names are decided; the sync script reads it and nothing
+else hard-codes a name. Generated files carry a do-not-edit header and mean it.
 
-The design system is found at `../design-system`, or wherever
-`TRUNGTRUNG_DS_PATH` points.
+Three mappings are worth knowing:
 
-**To change how a token maps into Tailwind, edit `scripts/token-map.ts`.** That
-file is the only place token names are decided; the sync script reads it and
-nothing else hard-codes a name. Generated files carry a do-not-edit header.
-
-Two mappings are worth knowing about:
-
-- The design system's semantic text colours (`--text-heading`, `--text-body`, …)
-  become `--color-fg-*`, because Tailwind v4 reserves the `--text-*` namespace
-  for font sizes and `typography.css` already owns it. So the utility is
-  `text-fg-heading`.
-- `--board-*` tokens are dropped. The design system marks them board and
+- The design system's semantic **text colours** (`--text-heading`, `--text-body`,
+  …) become `--color-fg-*`, because Tailwind v4 reserves the `--text-*`
+  namespace for font sizes and `typography.css` already owns it. So the utility
+  is `text-fg-heading`, not `text-text-heading`.
+- **`--board-*` tokens are dropped.** The design system marks them board and
   specimen chrome, never product UI.
+- The composed `--type-*` roles become both an `@utility` (`type-body`) and a
+  plain variable, so the `font:` shorthand the design system writes keeps
+  working.
 
-Every token is also re-aliased under its original design-system name, so CSS or
-a component copied out of the design system works here verbatim.
+Every token is also re-aliased under its **original design-system name**, so CSS
+or a component copied out of the design system works here verbatim.
 
-### Numbers are counted, never typed
+`var()` chains are deliberately not flattened. Keeping the primitive → semantic
+layering is what makes a palette change a one-line edit upstream.
+
+### Drift detection
+
+`npm run sync:design -- --check` exits non-zero if regenerating would change
+anything — i.e. if someone hand-edited a generated file, or if the design system
+moved and nobody re-synced. It is part of `npm run verify`.
+
+The design system's export directory is named after a project UUID that changes
+between exports, so the script matches on structure rather than on the name.
+Never hard-code that path.
+
+---
+
+## Numbers are counted, never typed
 
 `docs/02-product-spec.md` in the design system says, twice, *"Recount, never
-quote"* — its own figures have been wrong three times. So the page's numbers
-come from `content/stats.generated.ts`, counted from the same JSON the app
-ships from. Do not type a count into `content/site.ts`.
+quote"* — its own figures have been wrong three times. So every figure on this
+page comes from `content/stats.generated.ts`, counted by `scripts/sync-stats.ts`
+from the same JSON the app ships from.
 
-## Where things live
+```ts
+import { stats } from "@/content/stats.generated";
+stats.vocabulary   // 952
+stats.districts    // 24
+stats.letters      // 44
+```
 
-| Path | |
-|---|---|
-| `content/site.ts` | **Every word on the page**, plus the launch switch |
-| `content/stats.generated.ts` | Generated counts |
-| `components/sections/` | One file per section, composed in `app/page.tsx` |
-| `components/screens/` | The three app screens, hand-built from the same tokens |
-| `components/rail/` | The kora rail that threads the page together |
-| `components/primitives/` | Button, Card, Section, TibetanText |
-| `styles/site.css` | Layout primitives the design system has no token for |
-| `scripts/` | The sync and adherence scripts |
+**Do not type a count into `content/site.ts`.** If you need a new one, add a
+counter to `COUNTERS` in `scripts/sync-stats.ts` and re-run the script. The
+source files run to megabytes; they are read at build time only, and nothing but
+the integers reaches the bundle.
 
-Copy lives in `content/site.ts` and nowhere else — changing wording should never
-mean touching JSX.
+---
 
-## Launching
+## Editing the page
 
-The page ships with an email waitlist where the store badges will go. To switch:
+### Change a word
+
+`content/site.ts`. That is the only file with user-facing prose in it —
+components hold none, by design, so wording changes never mean touching JSX.
+
+```ts
+export const hero = {
+  eyebrow: "Coming soon",
+  heading: ["Walk through Tibet.", "Learn what to say at every stop."],
+  …
+};
+```
+
+Copy must obey the voice rules — sentence case, no emoji, **zero exclamation
+marks**, no guilt framing. `npm run check:adherence` will tell you if you slip.
+
+### Change a number
+
+Don't. Run `npm run sync:stats` and use `stats.*`. See above.
+
+### Change a colour, size, radius or shadow
+
+Change it in the **design system**, then:
+
+```bash
+npm run sync:design
+```
+
+Everything derived follows. Changing `--teal-600` upstream moves the CTA, the
+active rail node, the focus ring and the tab indicator in one step.
+
+### Add or reorder a section
+
+1. Add `components/sections/YourSection.tsx`, using the `Section` primitive:
+
+```tsx
+<Section
+  id="your-anchor"
+  eyebrow="Short label"
+  heading={yourContent.heading}
+  body={yourContent.body}
+  bow="right"          // alternate with its neighbours
+>
+  …
+</Section>
+```
+
+2. Put its copy in `content/site.ts`.
+3. Add it to `app/page.tsx` in the right place.
+4. **Alternate the `bow`** so the rail keeps winding.
+5. If it should appear in the nav, add it to `nav.links` — the footer reuses
+   that same list, so a destination keeps one name everywhere.
+
+### Swap what a phone shows
+
+Edit the component in `components/screens/`, or write a new one and pass it to
+`PhoneFrame`. Author at 390×760 and let the frame handle shrinking.
+
+```tsx
+<PhoneFrame label="What this screen shows, for a screen reader">
+  <YourScreen />
+</PhoneFrame>
+```
+
+The `label` is required and becomes the accessible name — the interior is
+decorative to assistive technology.
+
+### Add Tibetan anywhere
+
+Always through `TibetanText`, and `roman` is required:
+
+```tsx
+<TibetanText roman="phööcha" size="lg">བོད་ཇ</TibetanText>
+```
+
+It enforces the design system's contract for the script: line-height 2.1 so
+stacked marks never collide, the separate Tibetan size ramp, no letter-spacing,
+breaking only after a tsheg, a 34ch measure, and the romanization as the
+accessible name (never THL). A screen reader handed raw uchen with an English
+voice produces noise, which is why `roman` is not optional.
+
+For the full naming triple — Tibetan, then romanization, then English gloss —
+use `NamingTriple` from the same file.
+
+### Flip to launched
 
 ```ts
 // content/site.ts
@@ -93,32 +280,97 @@ export const launch = {
 };
 ```
 
-Every call to action on the page becomes store links. No other file changes.
+Every call to action on the page becomes store links instead of the email form.
+No other file changes.
 
-### The waitlist
+---
 
-`POST /api/waitlist` → `lib/waitlist.ts`, which is one function. It defaults to
-a no-op that logs, so the form works end to end in development with no account.
+## Deployment
 
-For production set:
+`/api/waitlist` is a dynamic route, so this is **not** a static export — it
+needs a Node runtime. Vercel is the least setup; any Node host works.
+
+### Settings
+
+| | |
+|---|---|
+| Build command | `npm run build` |
+| Install command | `npm install` |
+| Output | `.next` (default) |
+| Node version | 20.9+ |
+
+### Do not use `npm run verify` as your CI or build command
+
+`verify` includes `sync:design -- --check` and `sync:stats -- --check`, both of
+which need the **design-system repo** sitting next to this one. A build server
+never has it, so verify will always fail there — and the tempting "fix" is to
+delete the drift check, which is the one thing keeping the theme honest.
+
+Verified behaviour with the design system absent:
+
+| Command | Result |
+|---|---|
+| `npm run build` | passes |
+| `npm run typecheck` | passes |
+| `npm run lint` | passes |
+| `npm run check:adherence` | passes (reads only this repo) |
+| `npm run sync:design -- --check` | **fails** — cannot find the design system |
+| `npm run sync:stats -- --check` | **fails** — same |
+
+If you want a CI check, use the subset that does not need the sibling repo:
+
+```bash
+npm run typecheck && npm run lint && npm run check:adherence && npm run build
+```
+
+Run the full `npm run verify` locally, where the design system exists.
+
+### Environment variables
+
+From `.env.example`:
 
 ```
-RESEND_API_KEY=…
-RESEND_AUDIENCE_ID=…
+RESEND_API_KEY=
+RESEND_AUDIENCE_ID=
 ```
 
-Swapping Resend for Buttondown, ConvertKit or anything else means editing
-`subscribe()` in `lib/waitlist.ts` and nothing else. In production a missing key
-is an error rather than a silent success — an address quietly dropped is worse
-than a visible failure.
+Without them, `lib/waitlist.ts` logs in development and **fails loudly in
+production** (502) rather than silently dropping an address. Set both in the
+host's environment settings before launch.
+
+### Domain
+
+`site.domain` in `content/site.ts` feeds `metadataBase` in `app/layout.tsx`,
+which is what makes the Open Graph image URL absolute. Changing the domain is
+that one field.
+
+Check the share card renders at `/opengraph-image` — it fetches Gabarito and
+Noto Serif Tibetan from Google at build time, with a fallback face if the fetch
+fails, so a plain card means the fetch did not succeed.
+
+### Pre-launch checklist
+
+- [ ] `npm run verify` passes locally
+- [ ] `npm run build` passes
+- [ ] `RESEND_API_KEY` and `RESEND_AUDIENCE_ID` set in the host
+- [ ] Submit a real address and confirm it lands in the Resend audience
+- [ ] `/opengraph-image` renders with both fonts
+- [ ] `site.domain` matches the live domain
+- [ ] Founder note replaced with Thosam's words (see [Known gaps](#known-gaps))
+- [ ] When the app is live: flip `launch.status` and fill the two store URLs
+
+---
 
 ## The rules
 
-`docs/01-vision.md` in the design system carries a **never-do list** that governs
-this page as well as the app. `npm run check:adherence` enforces the mechanical
-parts of it: no raw hex, no hairline borders, no hand-written shadow colours, no
-`--board-*`, no emoji, no exclamation marks in copy, no loss framing, and the
-palette codename never appearing as text.
+`docs/01-vision.md` in the design system carries a **never-do list**. Thosam
+ruled that it governs this page as well as the app — the page and the product
+have to read as one thing.
+
+`npm run check:adherence` enforces the mechanical half across every `.ts`,
+`.tsx` and `.css` file: no raw hex, no hairline borders, no hand-written shadow
+colours, no `--board-*`, no emoji, no exclamation marks in copy, no loss
+framing, and the palette codename never appearing as text.
 
 An exception needs a reason, in place:
 
@@ -127,26 +379,34 @@ An exception needs a reason, in place:
 themeColor: "#EDF2F3",
 ```
 
-The rules the checker cannot see, which still hold:
+The rules the checker **cannot** see, which still hold:
 
 - **One brand colour.** The crane's reds and oranges belong to the crane.
 - **One full-bleed accent panel** on the whole page. It is spent on The Crossing.
 - **Teal is the loudest thing at one place per view.** That is why the header's
-  call to action is a ghost.
-- **The crane appears three times.** Hero, The Crossing, the close. At rest,
-  never as wallpaper, never recoloured.
-- **Tibetan goes through `TibetanText`** — line-height 2.1, no letter-spacing,
-  breaking only at a tsheg, and the romanization as the accessible name.
+  call to action is a ghost and not a button.
+- **The crane appears three times** — hero, The Crossing, the close. At rest,
+  never as wallpaper, never recoloured, never rotated.
+- **Two button skins only**, teal primary and ghost. A third is a design-system
+  change, not a component change.
 - **Light mode only.** The design system has no dark theme by intent.
+- **The rail is the only scroll motion.** Nothing else fades or slides in.
+
+---
 
 ## Known gaps
 
-- The founder note in `content/site.ts` is a placeholder. The vision doc's own
-  founder paragraph is marked draft-not-to-be-kept and must not be used; it needs
-  Thosam's words.
-- The design system names `Noto Sans Tibetan` first in `--font-tibetan`, but
-  Google Fonts does not publish that family, so the board has always rendered
-  the serif. This site loads `Noto Serif Tibetan` to match, and leaves the sans
-  first in the stack so it takes over if it is ever self-hosted.
-- No logo file exists; the wordmark is set type. `components/Wordmark.tsx` is
-  the one file to change when there is one.
+- **The founder note is a placeholder.** `note` in `content/site.ts` is flagged
+  `draft: true`. The vision doc's own founder paragraph carries an explicit
+  *"written by Claude, to be replaced, not kept"* marker and must not be used.
+  It needs Thosam's words before launch.
+- **`Noto Sans Tibetan` is not published on Google Fonts.** The design system
+  names it first in `--font-tibetan`, so the board has always fallen back to
+  `Noto Serif Tibetan`. This site loads the serif to match, and leaves the sans
+  first in the stack so it takes over if it is ever self-hosted. Worth fixing
+  upstream.
+- **No logo file exists.** The wordmark is set type (Gabarito 800).
+  `components/Wordmark.tsx` is the one file to change when there is one.
+- **Rate limiting is in-memory and per-instance** (`app/api/waitlist/route.ts`).
+  Enough to blunt a script, not a real limiter. Move it to the platform's edge
+  if this ever gets serious traffic.
