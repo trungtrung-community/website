@@ -49,8 +49,18 @@
   zoom: var(--phone-zoom, 1);
 }
 
+/* The frame is 390×760 plus a 12px bezel, so at zoom 1 it is 784px tall — which
+   made the hero 920px, and 1009px with the header. That does not fit on any
+   laptop. Height is the constraint here rather than width, so the steps below
+   are keyed to it. */
 :root {
-  --phone-zoom: 1;
+  --phone-zoom: 0.85;
+}
+
+@media (height < 52rem) {
+  :root {
+    --phone-zoom: 0.72;
+  }
 }
 
 /* Sized against the tightest container the frame ever sits in: a section's
@@ -122,11 +132,10 @@
     box-shadow var(--dur-base) var(--ease-out);
 }
 
-/* A waymark arrives as the draw front reaches it. Scale only — the design
-   system forbids dropping opacity below 1, so nothing here fades. */
-/* A waymark ahead of the reader is hollow; one the walk has passed is solid.
-   That reading only exists once the rail is being drawn, so it lives behind
-   .js-rail — the static rest state below is a finished, solid marker. */
+/* A waymark ahead of the reader is hollow; one the walk has passed is solid,
+   arriving with a scale rather than a fade — the design system forbids dropping
+   opacity below 1. That reading only exists once the rail is being drawn, so it
+   lives behind .js-rail; the rest state further down is a finished marker. */
 .js-rail .rail-node {
   scale: 0.8;
   background: var(--surface-app);
@@ -209,6 +218,36 @@
   }
 }
 
+/* Rows inside one card, separated by a rule instead of by space alone.
+ *
+ * This is the design system's Divider, and it is the one sanctioned line in a
+ * system built on fill value. Its own docstring names this exact case: "It
+ * separates rows that already share a single card — a grouped word card, a
+ * settings block — where a gap would read as two cards instead of one list."
+ *
+ * It applies below md only. In two columns the gap does the work; stacked into
+ * one, eight rows of heading-and-paragraph run together and the eye has nothing
+ * to catch. Half width and hanging off the text edge are the component's own
+ * defaults — a full-width rule would read as a border, which is the thing the
+ * system forbids.
+ */
+@utility list-divide {
+  & > * + *::before {
+    content: "";
+    display: block;
+    width: 50%;
+    height: var(--divider-hairline);
+    background: var(--divider-soft);
+    margin-bottom: var(--space-5);
+  }
+
+  @media (width >= 48rem) {
+    & > * + *::before {
+      display: none;
+    }
+  }
+}
+
 /* Tibetan breaks only at a tsheg. Without this a stack can be split across
  * lines, which is not a line break so much as a spelling error. */
 @utility tibetan-wrap {
@@ -242,6 +281,14 @@
 
   @media (width >= 64rem) {
     font-size: var(--text-5xl);
+  }
+
+  /* A short viewport steps back down the same ramp. A 13" laptop gives about
+     800px of viewport, and the hero has to fit it or the waitlist field lands
+     below the fold. Must stay last: these rules have equal specificity and
+     resolve by source order. */
+  @media (height < 52rem) and (width >= 64rem) {
+    font-size: var(--text-4xl);
   }
 }
 
@@ -277,10 +324,3 @@
 
 /* Tibetan at hero scale. 4.25rem is the design system's --text-tib-hero, which
  * is a lot of glyph on a 390px screen — so it steps up rather than starting there. */
-@utility tibetan-hero {
-  font-size: var(--text-tib-xl);
-
-  @media (width >= 48rem) {
-    font-size: var(--text-tib-hero);
-  }
-}

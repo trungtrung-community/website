@@ -80,38 +80,5 @@ export function TibetanText({
   );
 }
 
-type TripleProps = {
-  tibetan: string;
-  roman: string;
-  gloss: string;
-  size?: TibetanSize;
-  className?: string;
-};
-
-/**
- * The naming triple: Tibetan first, then the romanization, then the English
- * gloss — docs/04 says everywhere, including grids and tables.
- *
- * The romanization is set in italic Latin and never bracketed, per the voice
- * bible. It is visible rather than decorative: it is how a learner who only
- * speaks the language finds their footing in a script they cannot yet read.
- */
-export function NamingTriple({
-  tibetan,
-  roman,
-  gloss,
-  size = "lg",
-  className = "",
-}: TripleProps) {
-  return (
-    <div className={`flex flex-col gap-1 ${className}`}>
-      <TibetanText roman={roman} size={size}>
-        {tibetan}
-      </TibetanText>
-      <span className="type-caption text-fg-muted italic">{roman}</span>
-      <span className="type-body-strong text-fg-heading">{gloss}</span>
-    </div>
-  );
-}
 
 export type TibetanNode = ReactNode;

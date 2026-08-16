@@ -1,25 +1,29 @@
 import { Crane } from "@/components/Crane";
 import { WaitlistForm } from "@/components/WaitlistForm";
-import { TibetanText } from "@/components/primitives/TibetanText";
 import { PhoneFrame } from "@/components/screens/PhoneFrame";
-import { hero, site } from "@/content/site";
+import { hero } from "@/content/site";
 
 /**
  * Arrive.
  *
- * The thesis of the page is that the script is legible, so the script is the
- * largest thing on it. ཁྲུང་ཁྲུང་ is set at --text-tib-hero and carries the
- * naming triple beneath it — Tibetan, then the romanization, then the gloss —
- * which is both the brand mark and a worked example of the one convention the
- * whole product runs on.
- *
  * The phone shows S2, the journey rail, so the walk the page is about is
  * visible before a word of it is claimed.
+ *
+ * This used to open with ཁྲུང་ཁྲུང་ at --text-tib-hero, carrying the naming
+ * triple beneath it, on the argument that a page promising "then learn to read
+ * it" should show the script at hero scale. Thosam cut it on 2026-08-16: it
+ * cost 172px at the top of the hero, Tibetan's mandatory 2.1 line-height left
+ * an awkward gap before the romanization, and the header wordmark already says
+ * the name two inches above. The headline now starts almost immediately. The
+ * script still appears in the track cards, the collection and the footer.
  */
 export function Hero() {
   return (
     <section className="relative overflow-hidden">
-      <div className="page gutter pb-16 pt-6 md:pb-24 md:pt-10">
+      {/* Tighter than a Section's py-24 on purpose: the hero has to fit a
+          laptop viewport, and the next section brings its own top padding, so
+          the gap between them is still generous. */}
+      <div className="page gutter pb-16 pt-6 md:pb-12 md:pt-8">
         {/* The crane gets its own track at xl rather than being absolutely
             positioned over the text column. It used to sit at -left-44 inside
             the phone column, which reads as "beside the walk" only while the
@@ -31,24 +35,7 @@ export function Hero() {
           <div className="min-w-0">
             <p className="eyebrow text-fg-accent">{hero.eyebrow}</p>
 
-            {/* The name, as the naming triple. */}
-            <div className="mt-1">
-              <TibetanText
-                as="p"
-                roman={site.romanName}
-                size="hero"
-                className="tibetan-hero max-w-none"
-              >
-                {site.tibetanName}
-              </TibetanText>
-              <p className="type-body mt-1 text-fg-muted">
-                <span className="italic">{site.romanName}</span>
-                <span className="mx-2 text-fg-subtle">·</span>
-                {site.gloss}
-              </p>
-            </div>
-
-            <h1 className="hero-title mt-8 max-w-prose text-fg-heading">
+            <h1 className="hero-title mt-4 max-w-prose text-fg-heading">
               <span className="block">{hero.heading[0]}</span>{" "}
               <span className="block text-fg-accent">{hero.heading[1]}</span>
             </h1>

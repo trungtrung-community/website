@@ -1,6 +1,6 @@
 import { Card } from "@/components/primitives/Card";
 import { Section } from "@/components/primitives/Section";
-import { NamingTriple, TibetanText } from "@/components/primitives/TibetanText";
+import { TibetanText } from "@/components/primitives/TibetanText";
 import { tracks } from "@/content/site";
 
 /**
@@ -33,6 +33,13 @@ export function Tracks() {
             <p className="type-caption mt-1 text-fg-accent">{track.subtitle}</p>
             <p className="type-body mt-4 text-fg-body">{track.body}</p>
 
+            {/* Only the Read track has one. It is the outcome that track
+                exists for, and inventing a matching line for Speak to keep the
+                cards symmetrical would be writing copy to fill a shape. */}
+            {"payoff" in track && (
+              <p className="type-body-strong mt-4 text-fg-accent">{track.payoff}</p>
+            )}
+
             <dl className="mt-auto flex gap-6 pt-7">
               {track.facts.map((fact) => (
                 <div key={fact.label}>
@@ -47,16 +54,6 @@ export function Tracks() {
           </Card>
         ))}
       </div>
-
-      {/* The naming triple, shown rather than described. */}
-      <Card tone="accent" className="mt-5 grid gap-8 md:grid-cols-[auto_minmax(0,1fr)] md:items-center md:gap-12">
-        <NamingTriple
-          tibetan={tracks.example.tibetan}
-          roman={tracks.example.roman}
-          gloss={tracks.example.gloss}
-        />
-        <p className="type-body text-fg-body">{tracks.exampleCaption}</p>
-      </Card>
     </Section>
   );
 }

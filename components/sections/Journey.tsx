@@ -22,25 +22,29 @@ export function Journey() {
     >
       <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-14">
         <div className="min-w-0">
-          <ol className="flex flex-col">
+          {/* Places, not a numbered list of strings. Each district is its own
+              tile so the eye can take the walk in at a glance; a flat <ol> of
+              "1 The Tea House / 2 The Market" read as a table of contents. The
+              numbers stay because the sequence is real information — this is a
+              walk in order, not a menu. */}
+          <ol className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {journey.districts.map((name, i) => {
-              // The strip shows eight of twenty-four; the gap before Departure
-              // is the rest of the walk, and is marked rather than hidden.
+              // Eight of twenty-four. The gap before Departure is the rest of
+              // the walk, and is marked rather than hidden.
               const last = i === journey.districts.length - 1;
-              const number = last ? stats.districts : i + 1;
               return (
-                <li key={name}>
+                <li key={name} className="contents">
                   {last && (
-                    <p className="py-3 pl-[3.25rem] type-caption text-fg-subtle">
+                    <span className="flex items-center justify-center rounded-card bg-surface-sunken px-4 py-3 text-center type-caption text-fg-subtle">
                       and {stats.districts - journey.districts.length} more
-                    </p>
+                    </span>
                   )}
-                  <div className="flex items-center gap-5">
-                    <span className="w-8 shrink-0 text-right type-caption tabular-nums text-fg-subtle">
-                      {number}
+                  <span className="flex min-w-0 flex-col gap-1 rounded-card bg-surface-card px-4 py-3">
+                    <span className="type-label tabular-nums text-fg-accent">
+                      {last ? stats.districts : i + 1}
                     </span>
                     <span className="type-body-strong text-fg-heading">{name}</span>
-                  </div>
+                  </span>
                 </li>
               );
             })}

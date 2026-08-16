@@ -21,7 +21,7 @@ export function Principles() {
       heading={principles.heading}
       body={principles.body}
     >
-      <dl className="mt-10 grid gap-x-12 gap-y-8 rounded-card bg-surface-card p-6 md:grid-cols-2 md:p-10">
+      <dl className="list-divide mt-10 grid gap-x-12 gap-y-5 rounded-card bg-surface-card p-6 md:grid-cols-2 md:gap-y-8 md:p-10">
         {principles.items.map((item) => (
           <div key={item.title}>
             <dt className="type-body-strong text-fg-heading">{item.title}</dt>

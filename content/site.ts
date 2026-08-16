@@ -67,8 +67,8 @@ export const hero = {
   eyebrow: "Coming soon",
   heading: ["Learn to speak Tibetan.", "Then learn to read it."],
   /** The why, in one breath, before the product is described. */
-  why: "Many of us grew up in the West speaking less of it every year. This is my attempt at a way back.",
-  body: "Trungtrung teaches spoken Lhasa Tibetan and uchen, the printed Tibetan script. It is free, works offline, and asks for no account.",
+  why: "Many of us in the diaspora grew up speaking less Tibetan than our parents did. Trungtrung is a way to reconnect with the language.",
+  body: "Trungtrung teaches spoken Lhasa Tibetan and uchen, the printed Tibetan script. It is free and works offline.",
   // No craneAlt. components/Crane.tsx draws the mascot decoratively —
   // alt="" and aria-hidden — because the copy beside it already says
   // everything the bird does. A string here that never reaches the page is a
@@ -131,6 +131,10 @@ export const tracks = {
       roman: "lok",
       subtitle: "The uchen script, from the first letter",
       body: "Learn to read uchen from the ground up. You start with single letters, combine them into stacks and syllables, then read real Tibetan words and signs.",
+      // The best sentence on the page. It carried The Crossing until that
+      // section was cut, and it belongs to the Read track anyway — this is the
+      // outcome the whole second track exists for.
+      payoff: "One day you read a prayer flag. Then a shop sign. Then your own name.",
       facts: [
         { value: stats.letters, label: "letters" },
         { value: stats.stacks, label: "stacks" },
@@ -138,12 +142,9 @@ export const tracks = {
       ],
     },
   ],
-  /** The naming triple, shown live as the worked example: Tibetan, romanization, gloss.
-   *  Taken verbatim from the record in content/vocabulary.json, district 3. */
-  example: { tibetan: "བོད་ཇ", roman: "phööcha", gloss: "butter tea" },
-  // One line, because the example above already demonstrates the convention.
-  // It used to carry two sentences explaining what you can plainly see.
-  exampleCaption: "Every word arrives this way: script, sound, meaning.",
+  // The phööcha naming triple lived here and was cut: it demonstrated a
+  // convention a first-time visitor has no reason to care about yet, and the
+  // Tibetan in each track card already shows the same thing in passing.
 };
 
 /* ── 4. the journey — be let deeper ─────────────────────────────────────── */

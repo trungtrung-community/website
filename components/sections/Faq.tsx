@@ -22,7 +22,7 @@ export function Faq() {
       eyebrow={faq.eyebrow}
       heading={faq.heading}
     >
-      <dl className="mt-10 grid gap-x-12 gap-y-8 rounded-card bg-surface-card p-6 md:grid-cols-2 md:p-10">
+      <dl className="list-divide mt-10 grid gap-x-12 gap-y-5 rounded-card bg-surface-card p-6 md:grid-cols-2 md:gap-y-8 md:p-10">
         {faq.items.map((item) => (
           <div key={item.q} className="min-w-0">
             <dt className="type-body-strong text-fg-heading">{item.q}</dt>
