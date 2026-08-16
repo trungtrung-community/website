@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 
 import { hero, site } from "@/content/site";
 
-export const alt = `${site.name} — learn Tibetan`;
+export const alt = site.title;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

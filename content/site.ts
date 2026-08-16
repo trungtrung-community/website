@@ -44,9 +44,35 @@ export const site = {
   romanName: "trungtrung",
   /** The crane the app is named after. Used for the wordmark's tooltip and alt text. */
   gloss: "black-necked crane",
-  domain: "trungtrung.app",
+  /**
+   * The live host. Feeds metadataBase, which is what makes the Open Graph
+   * image URL absolute, and what robots.ts and sitemap.ts declare.
+   *
+   * This said trungtrung.app until 2026-08-16, when the domain had no DNS
+   * record and the site served from Vercel — so every og:image pointed at a
+   * host that did not resolve and no share card could load. Changing the
+   * domain is still this one field: point DNS at Vercel, put the custom
+   * domain back here, and re-verify in Search Console.
+   */
+  domain: "trungtrung.vercel.app",
+  /**
+   * The <title>, and the Open Graph and Twitter titles with it.
+   *
+   * Leads with the outcome rather than the name, because nobody searches for
+   * the brand yet and the first words are the ones a search result shows.
+   */
+  title: "Learn to speak and read Tibetan — Trungtrung",
   description:
     "Learn to speak Lhasa Tibetan and read the uchen script. Free, offline, and no account.",
+  /**
+   * Google Search Console, HTML-tag method.
+   *
+   * Committed rather than an env var on purpose: the token is public by
+   * design — it is served in the HTML for anyone to read, which is the whole
+   * mechanism — so there is nothing to protect, and a missing env var would
+   * silently drop the tag and cost the verification on the next re-check.
+   */
+  googleSiteVerification: "-NttIeCsNFX7bi_Rj6onoCpyFICL51IJWnNl0mwkE2U",
 };
 
 export const nav = {

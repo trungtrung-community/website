@@ -36,22 +36,40 @@ const notoTibetan = Noto_Serif_Tibetan({
 export const metadata: Metadata = {
   metadataBase: new URL(`https://${site.domain}`),
   title: {
-    default: `${site.name} — learn Tibetan`,
+    default: site.title,
     template: `%s — ${site.name}`,
   },
   description: site.description,
   applicationName: site.name,
+  // One page, one address. Without this the same content is reachable at a
+  // deployment URL and at the domain, and the two split each other's signals.
+  alternates: { canonical: "/" },
   openGraph: {
     type: "website",
-    title: `${site.name} — learn Tibetan`,
+    url: "/",
+    title: site.title,
     description: site.description,
     siteName: site.name,
     locale: "en",
   },
   twitter: {
     card: "summary_large_image",
-    title: `${site.name} — learn Tibetan`,
+    title: site.title,
     description: site.description,
+  },
+  verification: { google: site.googleSiteVerification },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      // Licenses Google to show the share card full size rather than as a
+      // thumbnail, in results and in Discover.
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
   },
 };
 

@@ -46,6 +46,14 @@ type Props = {
  *
  * All but the last two come from the .tibetan rule in styles/base.css, which is
  * lifted from the design system's own base.css.
+ *
+ * The inner span also carries lang="bo", added 2026-08-16. Without it the only
+ * language marker on the page is <html lang="en">, so every Tibetan string is
+ * declared to be English — which misinforms font selection, translation tools
+ * and crawlers alike. It sits on the inner span rather than the outer tag
+ * because the outer tag's accessible name is the romanization, not the uchen.
+ * "bo" is complete on its own; "bo-Tibt" adds nothing, since Tibt is the
+ * default script for the language.
  */
 export function TibetanText({
   children,
@@ -63,7 +71,7 @@ export function TibetanText({
       aria-label={roman}
       className={`tibetan tibetan-wrap ${SIZES[size]} ${className}`}
     >
-      <span aria-hidden="true">
+      <span lang="bo" aria-hidden="true">
         {syllables.map((syllable, i) => (
           <Fragment key={i}>
             {syllable}

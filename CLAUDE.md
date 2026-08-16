@@ -123,6 +123,9 @@ Suspend a rule only in place, with a reason:
 | Waitlist provider | `lib/waitlist.ts` (one function) |
 | Flip to store badges | `launch` in `content/site.ts` |
 | Add a logo when one exists | `components/Wordmark.tsx` |
+| Change the domain | `site.domain` — it drives `metadataBase`, canonical, robots and sitemap together |
+| Change the `<title>` or search description | `site.title` / `site.description` |
+| Change what crawlers are told | `app/robots.ts`, `components/StructuredData.tsx` |
 
 Adding a section: use the `Section` primitive, give it an `id`, put its copy in
 `content/site.ts`, and that is the whole job — the rail is straight and the
@@ -162,7 +165,10 @@ RSC payload. Drive new behaviour from RailMotion by class instead.
 | Path | |
 |---|---|
 | `app/page.tsx` | Composes the sections, nothing else |
-| `app/layout.tsx` | Fonts, metadata, `metadataBase` |
+| `app/layout.tsx` | Fonts, metadata, `metadataBase`, canonical, verification |
+| `app/robots.ts`, `app/sitemap.ts` | `/robots.txt` and `/sitemap.xml`, both off `site.domain` |
+| `app/icon.png`, `app/apple-icon.png`, `app/favicon.ico` | Derived from `public/mascot/app_icon.jpg`. Next reads icons from `app/` only |
+| `components/StructuredData.tsx` | The JSON-LD graph. Renders nothing visible |
 | `app/api/waitlist/route.ts` | The one dynamic route |
 | `components/sections/` | One file per section |
 | `components/screens/PhoneFrame.tsx` | The bezel around a captured screen |
@@ -200,6 +206,12 @@ anything visual, also look at it — start `npm run dev` and check at 320, 390,
 
 ## Gotchas
 
+- **`site.domain` fails silently when it is wrong.** It was `trungtrung.app`
+  until 2026-08-16, a domain with no DNS record, while the site served from
+  Vercel — so every `og:image` was an absolute URL to a host nothing could
+  reach and no share card anywhere would load. Typecheck, lint, adherence and
+  build all passed throughout, because the URL is well-formed; only fetching it
+  finds this. After any domain move, open the live `og:image` URL yourself.
 - **`npm run verify` needs the design-system repo present, and Playwright.** All
   three sync `--check`s exit 1 without the sibling repo, and `sync:screens`
   drives a real browser. That is correct behaviour, not a bug — but it means

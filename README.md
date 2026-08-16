@@ -372,12 +372,46 @@ host's environment settings before launch.
 ### Domain
 
 `site.domain` in `content/site.ts` feeds `metadataBase` in `app/layout.tsx`,
-which is what makes the Open Graph image URL absolute. Changing the domain is
-that one field.
+which is what makes the Open Graph image URL absolute, and what `robots.ts`
+and `sitemap.ts` declare. Changing the domain is that one field.
+
+**It has to match the host that actually serves.** This said `trungtrung.app`
+until 2026-08-16, when that domain had no DNS record at all and the site was
+serving from Vercel — so every `og:image` pointed at a host nothing could
+reach, and every share on Twitter, Slack, WhatsApp and iMessage was a bare
+link with no card. Nothing in the build catches this, because the URL is
+well-formed. Check it by hand after any move: `curl -s https://<host>/ | grep
+og:image`, then open that URL.
+
+To move to a custom domain: add it in Vercel, point DNS, set it primary so
+Vercel issues the 301s, put it in `site.domain`, then re-verify in Search
+Console and re-submit the sitemap.
 
 Check the share card renders at `/opengraph-image` — it fetches Gabarito and
 Noto Serif Tibetan from Google at build time, with a fallback face if the fetch
 fails, so a plain card means the fetch did not succeed.
+
+### Search and sharing
+
+Four files carry all of it, and each reads `content/site.ts` so nothing can
+drift from the page:
+
+| File | |
+|---|---|
+| `app/robots.ts` | `/robots.txt`. Allows everything but `/api/`, names the sitemap. Assistant crawlers are deliberately **not** blocked — see the comment in the file |
+| `app/sitemap.ts` | `/sitemap.xml`. One URL, `<loc>` only, on purpose |
+| `components/StructuredData.tsx` | The JSON-LD graph: Organization, WebSite, MobileApplication, FAQPage. Store links appear when `launch.status` flips, like everything else |
+| `app/icon.png`, `app/apple-icon.png`, `app/favicon.ico` | Derived from `public/mascot/app_icon.jpg`, which stays the master. Next only reads icons from `app/`, never `public/` |
+
+`site.googleSiteVerification` is committed rather than an env var. The token is
+public by design — it is served in the HTML, which is the whole mechanism — so
+there is nothing to protect, and a missing env var would drop the tag silently
+and cost the verification on Google's next re-check.
+
+The apple icon has its corners filled with the panel colour while the browser
+icon keeps them transparent. iOS masks the icon itself, so a baked-in rounded
+corner shows as a white arc inside its mask; a browser tab does no masking, so
+the drawn shape is the shape.
 
 ### Pre-launch checklist
 
@@ -386,7 +420,9 @@ fails, so a plain card means the fetch did not succeed.
 - [ ] `RESEND_API_KEY` and `RESEND_AUDIENCE_ID` set in the host
 - [ ] Submit a real address and confirm it lands in the Resend audience
 - [ ] `/opengraph-image` renders with both fonts
-- [ ] `site.domain` matches the live domain
+- [x] `site.domain` matches the live domain — `trungtrung.vercel.app`, 2026-08-16
+- [ ] Open the live `og:image` URL in a browser and confirm it loads
+- [ ] Search Console: verify the property, submit `/sitemap.xml`, request indexing
 - [ ] Founder note replaced with Thosam's words (see [Known gaps](#known-gaps))
 - [ ] When the app is live: flip `launch.status` and fill the two store URLs
 

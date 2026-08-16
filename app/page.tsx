@@ -9,6 +9,7 @@ import { Note } from "@/components/sections/Note";
 import { Principles } from "@/components/sections/Principles";
 import { Tracks } from "@/components/sections/Tracks";
 import { RailMotion } from "@/components/rail/RailMotion";
+import { StructuredData } from "@/components/StructuredData";
 
 /**
  * The walk.
@@ -25,10 +26,15 @@ import { RailMotion } from "@/components/rail/RailMotion";
  *
  * RailMotion renders nothing. It is mounted once, finds the rail by class and
  * drives it, so no section has to become a client component.
+ *
+ * StructuredData renders nothing visible either — one JSON-LD script, built
+ * from the same content/site.ts the sections read, so the machine-readable
+ * version of the page can never drift from the page.
  */
 export default function Home() {
   return (
     <>
+      <StructuredData />
       <Header />
       <main>
         <Hero />
