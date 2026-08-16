@@ -1,0 +1,32 @@
+{
+  "name": "trungtrung-website",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "sync:design": "node scripts/sync-design.ts",
+    "sync:stats": "node scripts/sync-stats.ts",
+    "sync": "npm run sync:design && npm run sync:stats",
+    "check:adherence": "node scripts/check-adherence.ts",
+    "verify": "npm run typecheck && npm run lint && npm run check:adherence && npm run sync:design -- --check && npm run sync:stats -- --check"
+  },
+  "dependencies": {
+    "next": "16.3.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.1",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+/* Generated from the design system by `npm run sync:design`.
+   Edit scripts/token-map.ts, never the generated file. */
+@import "../styles/theme.generated.css";
+
+@import "../styles/base.css";
+@import "../styles/site.css";

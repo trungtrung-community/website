@@ -1,0 +1,108 @@
+/* Base layer — adapted from the design system's tokens/base.css.
+ *
+ * The pristine upstream copy lives at styles/tokens/base.css and is a mirror,
+ * never imported. This file is the web adaptation: the same rules, in
+ * @layer base so Tailwind utilities always win, plus the handful of things a
+ * scrolling page needs that a 390x760 app frame does not.
+ */
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--surface-app);
+    color: var(--text-body);
+    font: var(--type-body);
+    letter-spacing: var(--tracking-body);
+    text-wrap: pretty;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    color: var(--text-heading);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-display);
+    text-wrap: balance;
+  }
+
+  a {
+    color: var(--text-link);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+  }
+
+  a:hover {
+    color: var(--text-link-hover);
+  }
+
+  /* The focus ring is never removed — docs/04 states it explicitly. */
+  :where(button, [role="button"], a, input, summary):focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-xs);
+  }
+
+  ::selection {
+    background: var(--surface-accent-soft);
+    color: var(--text-accent);
+  }
+
+  /* Tibetan is set through the TibetanText component, which applies this rule.
+   * Line-height 2.1 is required so stacked subjoined letters and vowel marks
+   * never collide — the design system calls it its one non-negotiable rule.
+   */
+  .tibetan {
+    font-family: var(--font-tibetan);
+    font-size: var(--text-tib-md);
+    line-height: var(--leading-tibetan);
+    letter-spacing: var(--tracking-tibetan);
+    color: var(--text-tibetan);
+    max-width: var(--measure-tibetan);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 1ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 1ms !important;
+    }
+  }
+}
+
+/* ── Utilities the design system implies but has no token for ───────────── */
+
+/* The page gutter, stepping 20px -> 40px at the md breakpoint, matching
+   --gutter-mobile / --gutter-desktop. */
+@utility gutter {
+  padding-inline: var(--gutter-mobile);
+
+  @media (width >= theme(--breakpoint-md)) {
+    padding-inline: var(--gutter-desktop);
+  }
+}
+
+/* A primary control's chunky edge, and the press that sinks it onto that edge.
+   The design system draws depth with a solid offset shadow, never a blur. */
+@utility edge-press {
+  transition:
+    box-shadow var(--dur-fast) var(--ease-out),
+    translate var(--dur-fast) var(--ease-out);
+
+  &:active {
+    translate: 0 var(--press-translate);
+    box-shadow: var(--edge-pressed, none);
+  }
+}

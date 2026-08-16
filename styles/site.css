@@ -1,0 +1,258 @@
+/* Page-level layout primitives.
+ *
+ * styles/base.css adapts the design system's own base rules. This file holds
+ * what a scrolling marketing page needs and a 390x760 app frame never did:
+ * a page measure, the rail lane, and the kora rail itself.
+ */
+
+:root {
+  /* The content column. The design system stops at --measure-prose (62ch) for
+     text; a page also needs a shell width. */
+  --page-max: 72rem;
+
+  /* The lane the kora rail runs down, to the left of the content.
+     The app's --rail-amplitude (84px) is sized for a 390px phone; on a page
+     the sway is a proportion of this lane instead, so it scales with it. */
+  --rail-lane: 1.75rem;
+
+  /* The waymark node. The app's --rail-node is 68px, which is a touch target
+     on a phone; here it is a mark to read, not to press. */
+  --node-size: 0.875rem;
+}
+
+@media (width >= 48rem) {
+  :root {
+    --rail-lane: 7.5rem;
+    --node-size: 1.25rem;
+  }
+}
+
+@utility page {
+  width: 100%;
+  max-width: var(--page-max);
+  margin-inline: auto;
+}
+
+/* ── The device frame ─────────────────────────────────────────────────────
+ *
+ * Screens are authored at the board's 390x760 and never re-laid-out; the frame
+ * shrinks the whole thing instead. `zoom` rather than `transform: scale()`
+ * because zoom reflows, so the frame still occupies its real height and needs
+ * no negative margin to compensate.
+ *
+ * Two steps rather than a fluid factor: CSS cannot divide a length by a length,
+ * so `calc(100cqw / 390)` is not a number and cannot drive a scale. Two
+ * breakpoints cover the range between the 320px floor the design system
+ * device-checks and the full 390px frame.
+ */
+@utility phone {
+  zoom: var(--phone-zoom, 1);
+}
+
+:root {
+  --phone-zoom: 1;
+}
+
+/* Sized against the tightest container the frame ever sits in: a section's
+   content column, which is the viewport less both gutters and the rail lane. */
+@media (width < 30rem) {
+  :root {
+    --phone-zoom: 0.76;
+  }
+}
+
+@media (width < 23.5rem) {
+  :root {
+    --phone-zoom: 0.58;
+  }
+}
+
+/* The content sits to the right of the rail lane. */
+@utility rail-lane {
+  position: relative;
+  padding-left: var(--rail-lane);
+}
+
+/* ── The kora rail ────────────────────────────────────────────────────────
+ *
+ * One continuous stroke down the page. Each section renders its own segment;
+ * every segment enters and leaves at the horizontal centre of the lane, so
+ * they join seamlessly whatever height a section happens to be.
+ *
+ * The segment SVG stretches with preserveAspectRatio="none", which means the
+ * sway is a proportion of the lane width — wide on desktop, nearly straight in
+ * the 28px mobile lane — from one path with no breakpoint logic.
+ * vector-effect keeps the stroke an even weight through that distortion.
+ *
+ * Colour follows the design system's own rail semantics: the track is
+ * --rail-track and only the walked portion is --rail-active. So the page is
+ * mostly quiet grey, and teal stays the loudest thing in one place.
+ */
+
+@utility rail-svg {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: var(--rail-lane);
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* The walked portion, drawn as the segment passes through the viewport.
+ * Default state is fully drawn, so a browser without scroll-driven animation
+ * (or a reader who asked for reduced motion) gets a complete rail rather than
+ * an invisible one. */
+@keyframes rail-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .rail-active-path {
+      animation: rail-draw linear both;
+      animation-timeline: view();
+      animation-range: entry 85% exit 15%;
+    }
+  }
+}
+
+/* The waymark, centred on the rail. A node the walk has reached is solid teal;
+ * one it has not is a hollow dotted marker — the design system is explicit that
+ * a not-yet state is a waymark and never a padlock. */
+@utility rail-node {
+  position: absolute;
+  left: calc(var(--rail-lane) / 2);
+  translate: -50% 0;
+  width: var(--node-size);
+  height: var(--node-size);
+  border-radius: var(--radius-pill);
+  background: var(--rail-active);
+  box-shadow: 0 0 0 0.375rem var(--surface-app);
+}
+
+@utility rail-waymark {
+  position: absolute;
+  left: calc(var(--rail-lane) / 2);
+  translate: -50% 0;
+  width: var(--node-size);
+  height: var(--node-size);
+  border-radius: var(--radius-pill);
+  background: var(--surface-app);
+  box-shadow:
+    0 0 0 0.375rem var(--surface-app),
+    var(--ring-marker);
+}
+
+/* ── Controls ─────────────────────────────────────────────────────────────
+ * The design system draws depth with a solid offset, never a blur, and a
+ * pressed control sinks onto its edge: the edge shrinks 4px -> 2px while the
+ * control moves down 2px, so the two meet.
+ */
+
+@utility edge-accent {
+  box-shadow: var(--edge-accent);
+  transition:
+    box-shadow var(--dur-fast) var(--ease-out),
+    translate var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+
+  &:active {
+    translate: 0 var(--press-translate);
+    box-shadow: 0 var(--edge-depth-pressed) 0 0 var(--teal-800);
+  }
+}
+
+@utility edge-ground {
+  box-shadow: var(--edge-ground);
+  transition:
+    box-shadow var(--dur-fast) var(--ease-out),
+    translate var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+
+  &:active {
+    translate: 0 var(--press-translate);
+    box-shadow: 0 var(--edge-depth-pressed) 0 0 var(--ground-300);
+  }
+}
+
+/* Tibetan breaks only at a tsheg. Without this a stack can be split across
+ * lines, which is not a line break so much as a spelling error. */
+@utility tibetan-wrap {
+  word-break: keep-all;
+  overflow-wrap: normal;
+  line-break: strict;
+}
+
+/* ── Headings ─────────────────────────────────────────────────────────────
+ *
+ * The design system's --type-* roles are single-size, because a 390px frame
+ * only ever needs one. A page needs the same role at three widths, so these
+ * carry the responsive step internally.
+ *
+ * They are defined here rather than composed from `type-display text-4xl`
+ * because two utilities setting font-size in the same layer resolve by
+ * Tailwind's sort order rather than by the order they are written, which makes
+ * the result look arbitrary the first time a breakpoint disagrees.
+ */
+
+@utility hero-title {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-3xl);
+  line-height: var(--leading-display);
+  letter-spacing: var(--tracking-display);
+
+  @media (width >= 48rem) {
+    font-size: var(--text-4xl);
+  }
+
+  @media (width >= 64rem) {
+    font-size: var(--text-5xl);
+  }
+}
+
+@utility section-title {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-2xl);
+  line-height: var(--leading-display);
+  letter-spacing: var(--tracking-display);
+
+  @media (width >= 48rem) {
+    font-size: var(--text-3xl);
+  }
+}
+
+@utility card-title {
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-xl);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-display);
+}
+
+/* The eyebrow. The only place all-caps is sanctioned is the micro-label. */
+@utility eyebrow {
+  font-family: var(--font-body);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-2xs);
+  line-height: 1.2;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
+/* Tibetan at hero scale. 4.25rem is the design system's --text-tib-hero, which
+ * is a lot of glyph on a 390px screen — so it steps up rather than starting there. */
+@utility tibetan-hero {
+  font-size: var(--text-tib-xl);
+
+  @media (width >= 48rem) {
+    font-size: var(--text-tib-hero);
+  }
+}
