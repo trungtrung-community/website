@@ -10,11 +10,13 @@
     "typecheck": "tsc --noEmit",
     "sync:design": "node scripts/sync-design.ts",
     "sync:stats": "node scripts/sync-stats.ts",
-    "sync": "npm run sync:design && npm run sync:stats",
+    "sync:screens": "node scripts/sync-screens.ts",
+    "sync": "npm run sync:design && npm run sync:stats && npm run sync:screens",
     "check:adherence": "node scripts/check-adherence.ts",
-    "verify": "npm run typecheck && npm run lint && npm run check:adherence && npm run sync:design -- --check && npm run sync:stats -- --check"
+    "verify": "npm run typecheck && npm run lint && npm run check:adherence && npm run sync:design -- --check && npm run sync:stats -- --check && npm run sync:screens -- --check"
   },
   "dependencies": {
+    "gsap": "^3.15.0",
     "next": "16.3.1",
     "react": "19.2.8",
     "react-dom": "19.2.8"
@@ -26,6 +28,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.1",
+    "playwright": "^1.62.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

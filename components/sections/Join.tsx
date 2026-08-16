@@ -18,7 +18,6 @@ export function Join() {
       id="join"
       heading={open ? waitlist.launched.heading : waitlist.heading}
       body={open ? waitlist.launched.body : waitlist.body}
-      bow="left"
       className="pb-4"
     >
       <div className="mt-8 flex flex-wrap items-end gap-x-16 gap-y-8">

@@ -16,10 +16,9 @@ export function Tracks() {
   return (
     <Section
       id="two-tracks"
-      eyebrow="What you learn"
+      eyebrow={tracks.eyebrow}
       heading={tracks.heading}
       body={tracks.body}
-      bow="left"
     >
       <div className="mt-10 grid gap-5 md:grid-cols-2">
         {tracks.items.map((track) => (
@@ -56,10 +55,7 @@ export function Tracks() {
           roman={tracks.example.roman}
           gloss={tracks.example.gloss}
         />
-        <p className="type-body text-fg-body">
-          Tibetan first, then how it sounds, then what it means. Every word in both tracks arrives
-          in that order, so the script and the sound are never separated.
-        </p>
+        <p className="type-body text-fg-body">{tracks.exampleCaption}</p>
       </Card>
     </Section>
   );

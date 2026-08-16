@@ -8,9 +8,9 @@ import Image from "next/image";
  * accessories beyond the teal scarf it already wears. A single two-frame bob is
  * the whole character-animation budget.
  *
- * This page's budget is three appearances — the hero, The Crossing, and the
- * close — and this component is deliberately the only way to draw it, so that
- * budget stays countable.
+ * This page's budget is two appearances — the hero and the close — and this
+ * component is deliberately the only way to draw it, so that budget stays
+ * countable. It was three until The Crossing section was cut.
  *
  * The crane is decoration next to copy that already says everything, so it is
  * hidden from assistive technology unless a caller passes an explicit alt.

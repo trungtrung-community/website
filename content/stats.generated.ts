@@ -8,9 +8,9 @@
  */
 
 export const stats = {
-  vocabulary: 972,    // words on the Speak track, both walks (vocabulary.json)
+  vocabulary: 1045,   // words on the Speak track, both walks (vocabulary.json)
   phrases: 416,       // phrases, drilled whole (phrases.json)
-  speakStops: 178,    // lesson stops across both walks (stops.json)
+  speakStops: 185,    // lesson stops across both walks (stops.json)
   districts: 24,      // places on the journey (circuit-manifest.json)
   collections: 10,    // card collections (collections.json)
   cards: 110,         // cultural cards found along the way (collections.json)

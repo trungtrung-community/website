@@ -17,10 +17,9 @@ export function Principles() {
   return (
     <Section
       id="how-its-built"
-      eyebrow="How it is made"
+      eyebrow={principles.eyebrow}
       heading={principles.heading}
       body={principles.body}
-      bow="left"
     >
       <dl className="mt-10 grid gap-x-12 gap-y-8 rounded-card bg-surface-card p-6 md:grid-cols-2 md:p-10">
         {principles.items.map((item) => (

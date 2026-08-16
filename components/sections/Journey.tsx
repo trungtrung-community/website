@@ -1,7 +1,6 @@
 import { Card } from "@/components/primitives/Card";
 import { Section } from "@/components/primitives/Section";
 import { PhoneFrame } from "@/components/screens/PhoneFrame";
-import { ScreenExercise } from "@/components/screens/ScreenExercise";
 import { journey } from "@/content/site";
 import { stats } from "@/content/stats.generated";
 
@@ -17,10 +16,9 @@ export function Journey() {
   return (
     <Section
       id="the-walk"
-      eyebrow="The shape of it"
+      eyebrow={journey.eyebrow}
       heading={journey.heading}
       body={journey.body}
-      bow="right"
     >
       <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-14">
         <div className="min-w-0">
@@ -55,9 +53,7 @@ export function Journey() {
         </div>
 
         <figure className="flex min-w-0 flex-col items-center gap-4">
-          <PhoneFrame label="A word check in the Tea House: the Tibetan word shiimpo, four English options, and the answer band naming how it sounds">
-            <ScreenExercise />
-          </PhoneFrame>
+          <PhoneFrame screen="exercise" label={journey.phoneLabel} />
           <figcaption className="type-caption text-center text-fg-muted">
             {journey.caption}
           </figcaption>

@@ -55,14 +55,15 @@ By default the design system is expected at `../design-system`. Point
 | `npm run start` | Serve a production build |
 | `npm run sync:design` | Pull tokens and mascot assets from the design system |
 | `npm run sync:stats` | Recount the content JSON into `content/stats.generated.ts` |
-| `npm run sync` | Both syncs |
+| `npm run sync:screens` | Photograph the app screens from the design system's boards |
+| `npm run sync` | All three syncs |
 | `npm run check:adherence` | Enforce the never-do list |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint |
-| `npm run verify` | typecheck + lint + adherence + both sync `--check`s |
+| `npm run verify` | typecheck + lint + adherence + all three sync `--check`s |
 
 `npm run verify` is the local gate before committing. It needs the
-design-system repo present — see [Deployment](#deployment) for why that means it
+design-system repo present and Playwright installed — see [Deployment](#deployment) for why that means it
 must not be your CI command.
 
 ---
@@ -77,38 +78,53 @@ out to be. No measurement, no JavaScript, no layout effect.
 
 Sections in page order, as composed in `app/page.tsx`:
 
-| # | Section | File | Anchor | Rail bows |
-|---|---|---|---|---|
-| — | Header | `sections/Header.tsx` | — | — |
-| 1 | Hero | `sections/Hero.tsx` | — | — |
-| 2 | Two tracks | `sections/Tracks.tsx` | `#two-tracks` | left |
-| 3 | The journey | `sections/Journey.tsx` | `#the-walk` | right |
-| 4 | The crossing | `sections/Crossing.tsx` | `#the-crossing` | left |
-| 5 | The collection | `sections/Collection.tsx` | `#collection` | right |
-| 6 | How it is made | `sections/Principles.tsx` | `#how-its-built` | left |
-| 7 | Why this exists | `sections/Note.tsx` | `#why` | right |
-| 8 | Join the walk | `sections/Join.tsx` | `#join` | left |
-| — | Footer | `sections/Footer.tsx` | — | — |
+| # | Section | File | Anchor |
+|---|---|---|---|
+| — | Header | `sections/Header.tsx` | — |
+| 1 | Hero | `sections/Hero.tsx` | — |
+| 2 | Why I am building this | `sections/Note.tsx` | `#why` |
+| 3 | What you learn | `sections/Tracks.tsx` | `#two-tracks` |
+| 4 | How it works | `sections/Journey.tsx` | `#the-walk` |
+| 5 | Tibetan culture | `sections/Collection.tsx` | `#collection` |
+| 6 | What will not change | `sections/Principles.tsx` | `#how-its-built` |
+| 7 | Questions | `sections/Faq.tsx` | `#faq` |
+| 8 | Join the walk | `sections/Join.tsx` | `#join` |
+| — | Footer | `sections/Footer.tsx` | — |
 
-The rail alternates `bow="left"` / `bow="right"` down the page. Keep alternating
-if you add or reorder anything.
+**Why comes second on purpose** — the page follows Sinek, so the reason arrives
+before the feature list and everything after it reads as evidence.
 
-**The Crossing is the only `tone="accent"` section** — the one full-bleed teal
-panel the design system allows in a whole product. Do not add a second.
+The rail is straight and the segments stack, so adding or reordering a section
+needs no other change. It bowed left and right until 2026-08-16; that looked
+like a stray pencil line and was cut.
+
+**No section currently uses `tone="accent"`.** The design system allows one
+full-bleed panel in a whole product. The Crossing held it until that section was
+cut; one section may claim it, never two.
 
 ### The three app screens
 
-`components/screens/` holds hand-built React re-creations of real board screens,
-using the same tokens the app does. They are not screenshots, so they stay crisp
-at any size and can be read by a screen reader.
+The phones show **the design system's own screens**, photographed from the
+boards by `npm run sync:screens`.
 
-| Component | Board screen | Shows |
+| Id | Board screen | Shows |
 |---|---|---|
-| `ScreenJourney` | S2 | The winding district rail |
-| `ScreenExercise` | S7 | A word check, answered, with the answer band |
-| `ScreenFirstWord` | B1 | The first readable word resolving letter by letter |
+| `journey` | S2 | 24 districts in 5 sections, on the head rail |
+| `exercise` | S7 | A word check: Tibetan prompt, four English options |
+| `card-found` | G4 | An artifact card found at the end of a stop |
 
-They are authored at the board's 390×760 and never re-laid-out.
+They used to be hand-written React re-creations, and every one was wrong — not
+in styling but in structure. The hand-drawn journey listed districts flat where
+the real S2 groups them into sections with a count line on each; the hand-drawn
+crossing invented ཀུ་ཤུ ("apple") where the real B1 resolves ཇ་ཁང་ ("tea
+house"). The cause was that `sync:design` only ever read `tokens/`, so the 51
+components and 296 screens in the same export went unnoticed.
+
+Reimplementing them here was never the right shape — and is not even possible:
+**22 of the 51 components ship only compiled inside `_ds_bundle.js`**, with no
+source on disk.
+
+Captures are 390×760 at 3×, committed to `public/screens/`.
 `PhoneFrame` shrinks the whole frame with CSS `zoom` at two breakpoints
 (`0.76` below 30rem, `0.58` below 23.5rem) — `zoom` rather than
 `transform: scale()` because zoom reflows, so the frame keeps its real height.
@@ -240,17 +256,32 @@ active rail node, the focus ring and the tab indicator in one step.
 
 ### Swap what a phone shows
 
-Edit the component in `components/screens/`, or write a new one and pass it to
-`PhoneFrame`. Author at 390×760 and let the frame handle shrinking.
+Pick a different screen from the board. Add it to `SCREENS` in
+`scripts/sync-screens.ts` — `label` must match the board's `data-screen-label`
+exactly, and the script fails loudly if `screens.json` has no such screen.
 
-```tsx
-<PhoneFrame label="What this screen shows, for a screen reader">
-  <YourScreen />
-</PhoneFrame>
+```ts
+{
+  id: "session-end",
+  label: "S8 Session end",
+  board: "Board-Speak.dc.html",
+  why: "What you can say by the end of a stop.",
+}
 ```
 
-The `label` is required and becomes the accessible name — the interior is
-decorative to assistive technology.
+Then `npm run sync:screens`, and use it:
+
+```tsx
+<PhoneFrame screen="session-end" label="What this screen shows, for a reader" />
+```
+
+To browse what is available, `screens.json` in the board folder lists all 296
+with their labels and rationale. The `label` prop is required and becomes the
+accessible name — the image itself is announced as one thing, not as a pile of
+decorative text.
+
+**Do not hand-write a screen.** If a screen is wrong, it is wrong in the design
+system, and fixing it there fixes it everywhere.
 
 ### Add Tibetan anywhere
 
@@ -382,10 +413,11 @@ themeColor: "#EDF2F3",
 The rules the checker **cannot** see, which still hold:
 
 - **One brand colour.** The crane's reds and oranges belong to the crane.
-- **One full-bleed accent panel** on the whole page. It is spent on The Crossing.
+- **At most one full-bleed accent panel** on the whole page. Currently unspent.
 - **Teal is the loudest thing at one place per view.** That is why the header's
   call to action is a ghost and not a button.
-- **The crane appears three times** — hero, The Crossing, the close. At rest,
+- **The crane appears twice** — the hero and the close. Count the ones inside
+  captured screens too. At rest,
   never as wallpaper, never recoloured, never rotated.
 - **Two button skins only**, teal primary and ghost. A third is a design-system
   change, not a component change.
@@ -396,10 +428,15 @@ The rules the checker **cannot** see, which still hold:
 
 ## Known gaps
 
-- **The founder note is a placeholder.** `note` in `content/site.ts` is flagged
-  `draft: true`. The vision doc's own founder paragraph carries an explicit
-  *"written by Claude, to be replaced, not kept"* marker and must not be used.
-  It needs Thosam's words before launch.
+- **The founder note is drafted from Thosam's words but not signed off.** `note`
+  in `content/site.ts` is still flagged `draft: true`. The vision doc's own
+  founder paragraph carries an explicit *"written by Claude, to be replaced, not
+  kept"* marker and is not used. Clear the flag once the wording is approved.
+- **Artifact illustrations are not drawn yet.** `docs/10` in the design system
+  says the board's illustration slots are placeholders, so the card in the G4
+  capture shows a flat ink block where the churn should be. Nothing to fix here:
+  draw them upstream and `npm run sync:screens` picks them up. This is the
+  argument for the pipeline in one line.
 - **`Noto Sans Tibetan` is not published on Google Fonts.** The design system
   names it first in `--font-tibetan`, so the board has always fallen back to
   `Noto Serif Tibetan`. This site loads the serif to match, and leaves the sans

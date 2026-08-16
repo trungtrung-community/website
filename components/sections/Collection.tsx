@@ -1,6 +1,7 @@
 import { Card } from "@/components/primitives/Card";
 import { Section } from "@/components/primitives/Section";
 import { TibetanText } from "@/components/primitives/TibetanText";
+import { PhoneFrame } from "@/components/screens/PhoneFrame";
 import { collection } from "@/content/site";
 import { stats } from "@/content/stats.generated";
 
@@ -21,12 +22,15 @@ export function Collection() {
   return (
     <Section
       id="collection"
-      eyebrow="What you find"
+      eyebrow={collection.eyebrow}
       heading={collection.heading}
       body={collection.body}
-      bow="right"
     >
-      <div className="mt-10 grid min-w-0 gap-5 lg:grid-cols-[auto_minmax(0,1fr)] lg:items-start">
+      {/* The phone carries this section. Describing a "card" never landed;
+          G4 shows one being found, drawn by the design system's own
+          ArtifactCard. */}
+      <div className="mt-10 grid min-w-0 gap-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start lg:gap-14">
+        <div className="grid min-w-0 gap-5">
         <Card className="min-w-0">
           <ol className="flex flex-col gap-4">
             {collection.flags.map((flag) => (
@@ -62,20 +66,19 @@ export function Collection() {
             <span className="type-caption text-fg-muted">
               cards across {stats.collections} collections
             </span>
-            <p className="type-body mt-4 text-fg-body">
-              A card is not a sticker. There is no shine, no rarity, no pack to open — you meet the
-              thing, and then you have met it.
-            </p>
+            <p className="type-body mt-4 text-fg-body">{collection.cardsNote}</p>
           </Card>
 
           <Card tone="sunken">
             <span className="block card-title text-fg-heading">{stats.readableWords}</span>
             <span className="type-caption text-fg-muted">words you can read by the end</span>
-            <p className="type-body mt-4 text-fg-body">
-              Read from the letters rather than recognised from a picture. The difference is the
-              whole point of the second track.
-            </p>
+            <p className="type-body mt-4 text-fg-body">{collection.readableNote}</p>
           </Card>
+        </div>
+        </div>
+
+        <div className="flex justify-center lg:justify-end">
+          <PhoneFrame screen="card-found" label={collection.phoneLabel} />
         </div>
       </div>
     </Section>

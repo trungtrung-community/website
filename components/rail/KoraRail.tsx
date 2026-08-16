@@ -1,54 +1,51 @@
 /**
  * The kora rail — the page's spine.
  *
- * The design system draws the journey as a winding rail of waymarks, and the
- * product's first principle is that the journey is a place. So the page is not
- * decorated with a rail; the page IS the walk, and scrolling it is the walk
- * being taken. Section headings hang off waymarks the way district hubs hang
- * off nodes on screen S2.
+ * The product's first principle is that the journey is a place, so the page is
+ * not decorated with a rail: the page IS the walk, and scrolling it is the walk
+ * being taken. Each section renders one segment; the segments stack into one
+ * unbroken line down the page, with a waymark beside every section heading.
  *
- * Each section renders one segment. Every segment enters and leaves at the
- * horizontal centre of the lane, so segments join seamlessly no matter how tall
- * a section turns out to be — no measurement, no JavaScript, no layout effect.
+ * It is straight, and deliberately so. It used to bow left and right through
+ * each section, and it looked like a stray pencil line: `preserveAspectRatio`
+ * stretched every segment to whatever height its section happened to be, so
+ * the sway amplitude and rhythm changed section to section and read as
+ * accidental rather than as a walk. Straight, tight against the content, with
+ * the waymarks anchored to the headings, the line means something — teal for
+ * the part behind you, grey for the part ahead. That is also what earns the
+ * scroll draw in RailMotion: it now says "you are here" instead of wobbling.
  *
  * Colour follows the design system's own rail semantics: --rail-track for the
- * path not yet walked and --rail-active for the part behind you. That keeps the
- * page mostly quiet grey and leaves teal free to be the loudest thing in one
- * place, which docs/04 requires.
+ * path not yet walked and --rail-active for the part behind you. So the page
+ * stays mostly quiet grey and teal is still the loudest thing in one place,
+ * which docs/04 requires.
  */
 
-const VIEW_W = 168;
+/** A one-unit-wide viewBox; preserveAspectRatio="none" stretches it to the lane. */
+const VIEW_W = 1;
 const VIEW_H = 1000;
 
-/** How far the segment leans out of the lane, as a fraction of lane width. */
-const SWAY = 0.46;
+/**
+ * The dash maths is normalised to this, so it is independent of how tall any
+ * particular segment actually is.
+ *
+ * It is 1000 rather than the obvious 1 because animation engines round
+ * pixel-valued properties to whole numbers: at pathLength 1 the entire draw
+ * happens inside a single pixel unit and collapses to either 0 or 1, so the
+ * rail snaps instead of drawing. Measured, not guessed — GSAP reported a clean
+ * 0.5 tween progress while rendering `stroke-dashoffset: 0px`. Any scale with
+ * room to round in is fine; 1000 makes the steps invisible.
+ */
+export const RAIL_LENGTH = 1000;
 
-type Bow = "left" | "right" | "straight";
-
-function pathFor(bow: Bow): string {
-  const mid = VIEW_W / 2;
-  if (bow === "straight") return `M${mid} 0 L${mid} ${VIEW_H}`;
-
-  const x = bow === "left" ? mid - VIEW_W * SWAY : mid + VIEW_W * SWAY;
-  // Enter and leave vertically at the lane centre so consecutive segments meet
-  // without a kink; bow out to `x` through the middle of the section.
-  return [
-    `M${mid} 0`,
-    `C${mid} ${VIEW_H * 0.22} ${x} ${VIEW_H * 0.3} ${x} ${VIEW_H * 0.5}`,
-    `C${x} ${VIEW_H * 0.7} ${mid} ${VIEW_H * 0.78} ${mid} ${VIEW_H}`,
-  ].join(" ");
-}
+const PATH = `M${VIEW_W / 2} 0 L${VIEW_W / 2} ${VIEW_H}`;
 
 export function RailSegment({
-  bow = "left",
   onInk = false,
 }: {
-  bow?: Bow;
   /** Inside the full-bleed teal panel the rail has to lighten to stay visible. */
   onInk?: boolean;
 }) {
-  const d = pathFor(bow);
-
   return (
     <svg
       className="rail-svg"
@@ -59,25 +56,25 @@ export function RailSegment({
     >
       {/* The path ahead. */}
       <path
-        d={d}
+        d={PATH}
         fill="none"
         stroke={onInk ? "var(--teal-500)" : "var(--rail-track)"}
         strokeWidth={2}
-        strokeLinecap="round"
         vectorEffect="non-scaling-stroke"
       />
-      {/* The path already walked, drawn as the section passes through view.
-          pathLength normalises the dash maths to 0..1 whatever the geometry. */}
+      {/* The path already walked, drawn as the section passes through view by
+          components/rail/RailMotion.tsx. dashoffset 0 is the fully-drawn rest
+          state, so the rail is complete without JavaScript rather than
+          invisible. */}
       <path
         className="rail-active-path"
-        d={d}
+        d={PATH}
         fill="none"
         stroke={onInk ? "var(--ground-050)" : "var(--rail-active)"}
         strokeWidth={2}
-        strokeLinecap="round"
         vectorEffect="non-scaling-stroke"
-        pathLength={1}
-        strokeDasharray={1}
+        pathLength={RAIL_LENGTH}
+        strokeDasharray={RAIL_LENGTH}
         strokeDashoffset={0}
       />
     </svg>
@@ -85,22 +82,25 @@ export function RailSegment({
 }
 
 /**
- * A waymark on the rail.
+ * A waymark on the rail, sitting beside a section heading.
  *
- * `reached` is solid teal. `waymark` is a hollow dotted marker — the design
- * system is explicit that a not-yet state is a waymark and never a padlock.
+ * At rest it is solid — that is what a reader with JavaScript off or reduced
+ * motion on sees, and a finished rail is the right static state. Once
+ * RailMotion is live it starts hollow and fills as the draw front reaches it,
+ * so the page reads as walked-behind / not-yet-ahead. The design system is
+ * explicit that a not-yet state is a hollow waymark and never a padlock.
  */
 export function RailNode({
-  kind = "reached",
+  onInk = false,
   className = "",
 }: {
-  kind?: "reached" | "waymark";
+  onInk?: boolean;
   className?: string;
 }) {
   return (
     <span
       aria-hidden="true"
-      className={`${kind === "reached" ? "rail-node" : "rail-waymark"} ${className}`}
+      className={`rail-node ${onInk ? "rail-node-ink" : ""} ${className}`}
     />
   );
 }

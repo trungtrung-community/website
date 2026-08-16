@@ -22,7 +22,7 @@
 
 @media (width >= 48rem) {
   :root {
-    --rail-lane: 7.5rem;
+    --rail-lane: 3rem;
     --node-size: 1.25rem;
   }
 }
@@ -75,14 +75,14 @@
 
 /* ── The kora rail ────────────────────────────────────────────────────────
  *
- * One continuous stroke down the page. Each section renders its own segment;
- * every segment enters and leaves at the horizontal centre of the lane, so
- * they join seamlessly whatever height a section happens to be.
+ * One continuous stroke down the page, straight, tight against the left edge
+ * of the content. Each section renders its own segment and they stack.
  *
- * The segment SVG stretches with preserveAspectRatio="none", which means the
- * sway is a proportion of the lane width — wide on desktop, nearly straight in
- * the 28px mobile lane — from one path with no breakpoint logic.
- * vector-effect keeps the stroke an even weight through that distortion.
+ * The lane is deliberately narrow — 3rem on desktop, not the 7.5rem it was
+ * until 2026-08-16. A wide lane leaves the line stranded 60px out in the
+ * margin, attached to nothing, which is what made the old winding version read
+ * as a stray pencil mark. At 3rem the line and its waymarks sit close enough to
+ * the headings to belong to them.
  *
  * Colour follows the design system's own rail semantics: the track is
  * --rail-track and only the walked portion is --rail-active. So the page is
@@ -99,32 +99,67 @@
   pointer-events: none;
 }
 
-/* The walked portion, drawn as the segment passes through the viewport.
- * Default state is fully drawn, so a browser without scroll-driven animation
- * (or a reader who asked for reduced motion) gets a complete rail rather than
- * an invisible one. */
-@keyframes rail-draw {
-  from {
-    stroke-dashoffset: 1;
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
+/* The walked portion is drawn by components/rail/RailMotion.tsx, which sets
+ * stroke-dashoffset straight from scroll position.
+ *
+ * This used to be `animation-timeline: view()`. Measured 2026-08-16, that was
+ * correct in Chromium at every viewport tested but drew nothing in Firefox or
+ * in Safari before 26, both of which fall back to a fully-drawn rail — safe,
+ * and indistinguishable from a bug.
+ *
+ * The rest state below is therefore still the complete rail: JavaScript off,
+ * or reduced motion, and the reader gets a finished path rather than an empty
+ * gutter. `.js-rail` is set by RailMotion only once it is live and only when
+ * motion is welcome, which is the sole condition under which it is safe to
+ * hide something in order to reveal it.
+ *
+ * GSAP decides when. These rules decide how, so the easing stays a token. */
+
+.js-rail .rail-node {
+  transition:
+    scale var(--dur-base) var(--ease-settle),
+    background-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
 }
 
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .rail-active-path {
-      animation: rail-draw linear both;
-      animation-timeline: view();
-      animation-range: entry 85% exit 15%;
-    }
-  }
+/* A waymark arrives as the draw front reaches it. Scale only — the design
+   system forbids dropping opacity below 1, so nothing here fades. */
+/* A waymark ahead of the reader is hollow; one the walk has passed is solid.
+   That reading only exists once the rail is being drawn, so it lives behind
+   .js-rail — the static rest state below is a finished, solid marker. */
+.js-rail .rail-node {
+  scale: 0.8;
+  background: var(--surface-app);
+  box-shadow:
+    0 0 0 0.375rem var(--surface-app),
+    var(--ring-marker);
 }
 
-/* The waymark, centred on the rail. A node the walk has reached is solid teal;
- * one it has not is a hollow dotted marker — the design system is explicit that
- * a not-yet state is a waymark and never a padlock. */
+.js-rail .rail-node-ink {
+  background: var(--surface-accent);
+  box-shadow:
+    0 0 0 0.375rem var(--surface-accent),
+    var(--ring-marker);
+}
+
+.js-rail .rail-node.is-arrived {
+  scale: 1;
+  background: var(--rail-active);
+  box-shadow: 0 0 0 0.375rem var(--surface-app);
+}
+
+.js-rail .rail-node-ink.is-arrived {
+  background: var(--ground-050);
+  box-shadow: 0 0 0 0.375rem var(--surface-accent);
+}
+
+/* The waymark, centred on the rail and level with a section's eyebrow. The ring
+ * of page-coloured shadow is what punches it through the line behind it.
+ *
+ * This is the rest state: solid, the whole walk finished. The hollow not-yet
+ * state lives in the .js-rail block above, because a rail that is not being
+ * drawn has no "not yet" to show. The design system is explicit that a not-yet
+ * state is a waymark and never a padlock. */
 @utility rail-node {
   position: absolute;
   left: calc(var(--rail-lane) / 2);
@@ -136,17 +171,10 @@
   box-shadow: 0 0 0 0.375rem var(--surface-app);
 }
 
-@utility rail-waymark {
-  position: absolute;
-  left: calc(var(--rail-lane) / 2);
-  translate: -50% 0;
-  width: var(--node-size);
-  height: var(--node-size);
-  border-radius: var(--radius-pill);
-  background: var(--surface-app);
-  box-shadow:
-    0 0 0 0.375rem var(--surface-app),
-    var(--ring-marker);
+/* On the one full-bleed accent panel the ring has to match that ground. */
+@utility rail-node-ink {
+  background: var(--ground-050);
+  box-shadow: 0 0 0 0.375rem var(--surface-accent);
 }
 
 /* ── Controls ─────────────────────────────────────────────────────────────

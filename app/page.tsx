@@ -1,5 +1,5 @@
 import { Collection } from "@/components/sections/Collection";
-import { Crossing } from "@/components/sections/Crossing";
+import { Faq } from "@/components/sections/Faq";
 import { Footer } from "@/components/sections/Footer";
 import { Header } from "@/components/sections/Header";
 import { Hero } from "@/components/sections/Hero";
@@ -8,14 +8,23 @@ import { Journey } from "@/components/sections/Journey";
 import { Note } from "@/components/sections/Note";
 import { Principles } from "@/components/sections/Principles";
 import { Tracks } from "@/components/sections/Tracks";
+import { RailMotion } from "@/components/rail/RailMotion";
 
 /**
  * The walk.
  *
- * Section order follows the arc docs/01 gives the journey itself — arrive,
- * settle, be let deeper, go out, leave — and the kora rail threads them
- * together. Each section renders its own segment of that rail, so adding or
- * reordering a section here needs no other change.
+ * Why comes second, directly after the hero. Thosam asked the page to reflect
+ * Sinek — people buy why you do it, and what you do proves what you believe —
+ * so the reason arrives before the feature list and every section after it
+ * reads as evidence. The rest still follows the arc docs/01 gives the journey
+ * itself: settle, be let deeper, go out, leave.
+ *
+ * The kora rail threads the sections together. Each renders its own segment and
+ * they stack into one unbroken line, so adding or reordering a section here
+ * needs no other change at all.
+ *
+ * RailMotion renders nothing. It is mounted once, finds the rail by class and
+ * drives it, so no section has to become a client component.
  */
 export default function Home() {
   return (
@@ -23,15 +32,16 @@ export default function Home() {
       <Header />
       <main>
         <Hero />
+        <Note />
         <Tracks />
         <Journey />
-        <Crossing />
         <Collection />
         <Principles />
-        <Note />
+        <Faq />
         <Join />
       </main>
       <Footer />
+      <RailMotion />
     </>
   );
 }

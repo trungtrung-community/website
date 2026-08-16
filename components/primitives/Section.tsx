@@ -6,12 +6,13 @@ import { RailNode, RailSegment } from "@/components/rail/KoraRail";
  * A stop on the page.
  *
  * Every section is a waymark on the kora rail: it renders its own rail segment
- * and hangs its heading off a node. Sections alternate which way the rail bows
- * so the spine reads as a walk rather than a ruler.
+ * and hangs its heading off a waymark, so the spine reads as a sequence of
+ * stops rather than as a border.
  *
  * `tone` controls the ground. The design system allows at most two background
- * fills per view, and exactly one full-bleed accent panel in a whole product —
- * this page spends it on The Crossing, and nowhere else.
+ * fills per view, and at most one full-bleed accent panel in a whole product.
+ * The page spent it on The Crossing until that section was cut, so `accent` is
+ * currently unused — and if a section takes it, it is the only one that may.
  */
 
 const TONES = {
@@ -26,9 +27,8 @@ type Props = {
   heading?: string;
   body?: string;
   tone?: keyof typeof TONES;
-  bow?: "left" | "right" | "straight";
-  /** Sections after the reader's position show a hollow waymark instead. */
-  node?: "reached" | "waymark" | "none";
+  /** Set false for a section that should carry the line but no waymark. */
+  node?: boolean;
   /** Headings are h2 by default; the hero owns the only h1. */
   headingLevel?: 2 | 3;
   children?: ReactNode;
@@ -41,8 +41,7 @@ export function Section({
   heading,
   body,
   tone = "ground",
-  bow = "left",
-  node = "reached",
+  node = true,
   headingLevel = 2,
   children,
   className = "",
@@ -54,8 +53,12 @@ export function Section({
     <section id={id} className={`relative ${TONES[tone]} ${className}`}>
       <div className="page gutter">
         <div className="rail-lane py-16 md:py-24">
-          <RailSegment bow={bow} onInk={onInk} />
-          {node !== "none" && <RailNode kind={node} className="top-16 md:top-24" />}
+          <RailSegment onInk={onInk} />
+          {/* The waymark sits on the eyebrow's line, which is why the offset
+              matches the section's own top padding. That anchoring is the
+              whole point of the spine: a marker floating in the margin is a
+              dot, a marker beside a heading is a stop on the walk. */}
+          {node && <RailNode onInk={onInk} className="top-16 md:top-24" />}
 
           {(eyebrow || heading || body) && (
             <header className="max-w-prose">

@@ -1,93 +1,74 @@
-import type { ReactNode } from "react";
+import Image from "next/image";
+
+import { screens, type ScreenId } from "@/content/screens.generated";
 
 /**
- * A device frame around a screen.
+ * A device frame around a real app screen.
  *
- * Proportions come from the design system's board: a 390x760 frame, a 60px app
- * bar and a 76px tab bar, with 20px gutters. The frame scales by setting a
- * width; everything inside is laid out in the same units the board uses, so a
- * screen ported from a board frame keeps its measurements.
+ * The screen inside is a photograph of the design system's own board, captured
+ * by `npm run sync:screens`. It used to be hand-written React, and that was a
+ * mistake worth recording: those components were built by reading the board and
+ * guessing, and they were structurally wrong — the hand-drawn journey listed
+ * districts flat where the real one groups 24 into 5 sections with a count line
+ * on each, and the hand-drawn crossing invented ཀུ་ཤུ ("apple") where the real
+ * one resolves ཇ་ཁང་ ("tea house").
  *
- * The screens inside are hand-built React rather than screenshots, so they stay
- * crisp at any size and can be read by a screen reader. They are illustrations
- * of the app, not the app: each is labelled as such for assistive technology.
+ * The design system ships 51 React components and 296 defined screens. This
+ * repo should never hold a second, drifting copy of any of them — and could
+ * not anyway, since 22 of those components exist only compiled inside
+ * `_ds_bundle.js`. So the page shows the design system's render, and a board
+ * change reaches this page through the script rather than through someone
+ * noticing.
+ *
+ * Proportions still come from the board: a 390×760 frame, 60px app bar, 76px
+ * tab bar, 20px gutters. The frame scales by width via the `phone` utility.
+ *
+ * These are illustrations of the app, not the app, so each is announced as a
+ * single labelled image rather than as a pile of decorative text.
  */
 
 export const FRAME_W = 390;
 export const FRAME_H = 760;
 
 export function PhoneFrame({
-  children,
+  screen,
   label,
+  priority = false,
   className = "",
 }: {
-  children: ReactNode;
-  /** What this screen shows, announced instead of the decorative interior. */
+  /** Which captured screen to show. See scripts/sync-screens.ts. */
+  screen: ScreenId;
+  /** What this screen shows, announced instead of the image itself. */
   label: string;
+  priority?: boolean;
   className?: string;
 }) {
+  const shot = screens[screen];
+
   return (
-    <div role="img" aria-label={label} className={`phone shrink-0 ${className}`}>
+    // w-fit as well as shrink-0: shrink-0 only holds in a flex parent, and a
+    // PhoneFrame dropped straight into a grid track stretches to the column,
+    // leaving the bezel wide and the 390px screen stranded against its left
+    // edge. w-fit makes the frame the right size wherever it is put.
+    <div className={`phone w-fit shrink-0 ${className}`}>
       {/* The bezel. Ink, because every outline in this system derives from it. */}
       <div className="rounded-sheet bg-ink-900 p-3 shadow-float">
         <div
           className="relative overflow-hidden rounded-xl bg-surface-app"
           style={{ width: FRAME_W, height: FRAME_H }}
         >
-          {children}
+          <Image
+            src={shot.src}
+            alt={label}
+            width={shot.width}
+            height={shot.height}
+            priority={priority}
+            // Captured at 3x; the frame never renders wider than 390 CSS px.
+            sizes={`${FRAME_W}px`}
+            className="block size-full object-cover object-top"
+          />
         </div>
       </div>
-    </div>
-  );
-}
-
-/** The app bar: 60px, per the board's authoring rules. */
-export function AppBar({
-  title,
-  trailing,
-}: {
-  title: ReactNode;
-  trailing?: ReactNode;
-}) {
-  return (
-    <div
-      className="flex items-center justify-between px-5"
-      style={{ height: 60 }}
-    >
-      <div className="type-body-strong text-fg-heading">{title}</div>
-      {trailing}
-    </div>
-  );
-}
-
-/** The tab bar: 76px, four tabs, per the information architecture in docs/02. */
-export function TabBar({ active }: { active: "journey" | "practice" | "collection" | "you" }) {
-  const tabs = [
-    { id: "journey", label: "Journey" },
-    { id: "practice", label: "Practice" },
-    { id: "collection", label: "Collection" },
-    { id: "you", label: "You" },
-  ] as const;
-
-  return (
-    <div
-      className="absolute inset-x-0 bottom-0 flex items-start justify-around bg-surface-card px-2 pt-3"
-      style={{ height: 76 }}
-    >
-      {tabs.map((t) => (
-        <div key={t.id} className="flex flex-col items-center gap-1.5">
-          <span
-            className={`block size-5 rounded-sm ${
-              t.id === active ? "bg-teal-600" : "bg-ground-300"
-            }`}
-          />
-          <span
-            className={`type-label ${t.id === active ? "text-fg-accent" : "text-fg-muted"}`}
-          >
-            {t.label}
-          </span>
-        </div>
-      ))}
     </div>
   );
 }

@@ -2,7 +2,6 @@ import { Crane } from "@/components/Crane";
 import { WaitlistForm } from "@/components/WaitlistForm";
 import { TibetanText } from "@/components/primitives/TibetanText";
 import { PhoneFrame } from "@/components/screens/PhoneFrame";
-import { ScreenJourney } from "@/components/screens/ScreenJourney";
 import { hero, site } from "@/content/site";
 
 /**
@@ -21,7 +20,14 @@ export function Hero() {
   return (
     <section className="relative overflow-hidden">
       <div className="page gutter pb-16 pt-6 md:pb-24 md:pt-10">
-        <div className="grid items-center gap-14 lg:grid-cols-[minmax(0,1.05fr)_auto] lg:gap-16">
+        {/* The crane gets its own track at xl rather than being absolutely
+            positioned over the text column. It used to sit at -left-44 inside
+            the phone column, which reads as "beside the walk" only while the
+            copy happens to wrap short: measured 2026-08-16, its box spans the
+            last ~115px of the text lane at every width, because --page-max caps
+            the layout so a wider viewport never opens a gap. A real track
+            cannot collide. */}
+        <div className="grid items-center gap-14 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-16 xl:grid-cols-[minmax(0,1fr)_auto_auto] xl:gap-10">
           <div className="min-w-0">
             <p className="eyebrow text-fg-accent">{hero.eyebrow}</p>
 
@@ -47,25 +53,25 @@ export function Hero() {
               <span className="block text-fg-accent">{hero.heading[1]}</span>
             </h1>
 
-            <p className="type-body mt-6 max-w-prose text-fg-body">{hero.body}</p>
+            {/* The why, before the product is described. Set at the heading
+                role so the reason outranks the feature list, which is the whole
+                point of putting it here — see components/sections/Note.tsx. */}
+            <p className="type-heading mt-6 max-w-prose text-fg-heading">{hero.why}</p>
+
+            <p className="type-body mt-4 max-w-prose text-fg-body">{hero.body}</p>
 
             <div className="mt-8">
               <WaitlistForm />
             </div>
           </div>
 
-          <div className="relative flex min-w-0 justify-center lg:justify-end">
-            {/* Crane one of three. At rest, beside the walk, never over it —
-                and out of flow, so it never narrows the headline column. */}
-            <Crane
-              size="sm"
-              priority
-              className="pointer-events-none absolute bottom-0 -left-44 hidden xl:block"
-            />
+          {/* Crane one of three. At rest, beside the walk, never over it. */}
+          <div className="hidden self-end xl:block">
+            <Crane size="sm" priority className="pointer-events-none" />
+          </div>
 
-            <PhoneFrame label="The Journey screen, showing the winding rail of districts on the Speak track">
-              <ScreenJourney />
-            </PhoneFrame>
+          <div className="relative flex min-w-0 justify-center lg:justify-end">
+            <PhoneFrame screen="journey" label={hero.phoneLabel} priority />
           </div>
         </div>
       </div>
